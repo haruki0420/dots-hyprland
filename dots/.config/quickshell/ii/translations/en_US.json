@@ -626,5 +626,12 @@
   "Look at the camera. Waiting for registration…": "Look at the camera. Waiting for registration…",
   "Register": "Register",
   "Face registration setup is not complete yet. Finish the system setup before registering.": "Face registration setup is not complete yet. Finish the system setup before registering.",
-  "Could not open face registration. Other settings remain available.": "Could not open face registration. Other settings remain available."
+  "Could not open face registration. Other settings remain available.": "Could not open face registration. Other settings remain available.",
+  "For unlocking after suspend": "For unlocking after suspend",
+  "Open the lid and camera shutter, then look at the camera.": "Open the lid and camera shutter, then look at the camera.",
+  "Checking the laptop lid…": "Checking the laptop lid…",
+  "Ready to register": "Ready to register",
+  "Administrator authentication is required when saving. Move your head slightly if the IR light goes dark.": "Administrator authentication is required when saving. Move your head slightly if the IR light goes dark.",
+  "Hide details": "Hide details",
+  "Show details": "Show details"
 }
