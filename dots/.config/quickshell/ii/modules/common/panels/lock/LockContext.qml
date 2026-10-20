@@ -24,7 +24,7 @@ Scope {
     property bool alsoInhibitIdle: false
     readonly property bool faceUnlockActive: faceUnlockLoader.item?.active ?? false
 
-    function tryFaceUnlockOnResume() {
+    function tryFaceUnlock() {
         faceUnlockLoader.item?.schedule();
     }
 
@@ -37,9 +37,14 @@ Scope {
         active: Config.options.lock.security.faceUnlockOnResume
         sourceComponent: FaceUnlock {
             LidState { id: lidState }
+            readinessKnown: lidState.known
             canAuthenticate: lidState.known && !lidState.closed && GlobalStates.screenLocked
                 && root.targetAction === LockContext.ActionEnum.Unlock
                 && root.currentText.length === 0 && !root.unlockInProgress
+            Component.onCompleted: {
+                // Also handle enabling the option while the screen is locked.
+                if (GlobalStates.screenLocked) Qt.callLater(root.tryFaceUnlock);
+            }
             onAuthenticated: {
                 root.stopFingerPam();
                 root.unlocked(LockContext.ActionEnum.Unlock);

@@ -1,4 +1,4 @@
-# Face unlock after suspend
+# Face unlock
 
 Face unlock is optional and disabled by default. It applies to the Quickshell
 lock screen, not Hyprlock, the login greeter, `sudo`, or disk encryption.
@@ -32,11 +32,13 @@ lock screen, not Hyprlock, the login greeter, `sudo`, or disk encryption.
 
    This Arch-layout helper uses `/usr/bin/howdy` and `/etc/howdy/models`.
    It accepts only a label, gets the account from `PKEXEC_UID`, and grants only
-   that user read access to the root-owned model. **Register your face** in the
-   settings opens an unprivileged dialog; administrator authentication applies
+   that user read access to the root-owned model. **Manage registered faces** in the
+   settings opens an unprivileged dialog with names, registration dates and IDs.
+   Only metadata is displayed, and opening or refreshing the list needs no
+   administrator authentication; administrator authentication applies
    only to the enrollment operation. UPower, `gdbus`, `pkexec`, and `setfacl`
    must be installed. Neither the desktop shell nor the settings GUI runs as root.
-5. Enable **Face unlock after suspend** in Settings → Interface → Lock screen →
+5. Enable **Unlock with face authentication** in Settings → Interface → Lock screen →
    Security, or set `lock.security.faceUnlockOnResume` to `true` in
    `~/.config/illogical-impulse/config.json`. Leave `lock.useHyprlock` disabled.
 6. The supplied `hypridle.conf` dispatches `quickshell:lockResume` after suspend.
@@ -48,10 +50,11 @@ lock screen, not Hyprlock, the login greeter, `sudo`, or disk encryption.
    ```
 
    The equivalent shell IPC is `qs -c ii ipc call lock resume`. It only attempts
-   authentication when the screen is already locked. Manual locking and shell
-   startup do not start the camera.
+   authentication when the screen is already locked. Entering the Quickshell
+   lock screen also starts one attempt, including a configured startup lock.
+   An unlocked desktop never starts the camera.
 
-After resume, the shell waits 1.5 seconds for the camera and makes one attempt.
+On lock entry or after resume, the shell waits 1.5 seconds for the camera and makes one attempt.
 Typing, submitting a password, selecting a power action, or leaving the lock
 screen cancels it. A closed lid (including clamshell mode) prevents camera
 authentication, and closing the lid during an attempt cancels it. The shell
@@ -80,5 +83,7 @@ window. It requires a running Wayland session and does not enroll or authenticat
 - Cover the camera and verify that password unlock still works.
 - Type immediately after resume and verify that face authentication stops.
 - Repeat suspend/resume while the screen is already locked.
-- Verify that manual locking does not start face authentication.
+- Verify that manual locking starts one face authentication attempt.
+- Close the lid and verify that neither locking nor resume opens the camera.
+- Open the registration dialog and verify the saved labels, dates and IDs.
 - Verify that face recognition cannot approve password-protected power actions.

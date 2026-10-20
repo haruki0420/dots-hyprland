@@ -1,18 +1,21 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Io
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.panels.lock
+import "FaceModels.js" as FaceModels
 
 Dialog {
     id: root
-    title: Translation.tr("Register your face")
+    title: Translation.tr("Face authentication")
     modal: true
     anchors.centerIn: parent
     width: Math.min(560, Math.max(320, (parent?.width ?? 608) - 48))
+    height: Math.min(implicitHeight, Math.max(240, (parent?.height ?? 900) - 48))
     padding: 0
     header: null
     footer: null
@@ -23,12 +26,37 @@ Dialog {
     property bool resultSuccess: false
     property bool detailsExpanded: false
     property bool helperReady: false
+    property var registeredFaces: []
+    property string modelError: ""
     readonly property bool canRegister: helperReady && lidState.known && !lidState.closed
         && !enrollment.running && label.text.trim().length > 0
 
     Overlay.modal: Rectangle { color: "#66000000" }
+    onOpened: modelFile.reload()
 
     LidState { id: lidState }
+    FileView {
+        id: modelFile
+        path: "/etc/howdy/models/" + (Quickshell.env("USER") || SystemInfo.username) + ".dat"
+        preload: true
+        // The model directory deliberately allows traversal without listing.
+        // Refresh on opening, after enrollment, and via the refresh button.
+        watchChanges: false
+        onLoaded: {
+            try {
+                root.registeredFaces = FaceModels.metadata(text());
+                root.modelError = "";
+            } catch (_) {
+                root.registeredFaces = [];
+                root.modelError = Translation.tr("Could not read registered faces.");
+            }
+        }
+        onLoadFailed: error => {
+            root.registeredFaces = [];
+            root.modelError = error === FileViewError.FileNotFound ? ""
+                : Translation.tr("Could not read registered faces.");
+        }
+    }
     Process {
         id: helperCheck
         command: ["test", "-x", "/usr/local/libexec/end4-face-enroll"]
@@ -47,11 +75,12 @@ Dialog {
         stdout: StdioCollector { id: output }
         stderr: StdioCollector { id: errors }
         onExited: exitCode => {
+            modelFile.reload();
             root.resultSuccess = exitCode === 0;
             root.resultDetails = exitCode === 0 || exitCode === 126 ? ""
                 : (errors.text + "\n" + output.text).trim().slice(-1600);
             root.resultText = exitCode === 0
-                ? Translation.tr("Face registered. You can now enable face unlock after suspend.")
+                ? Translation.tr("Face registered. You can now enable face authentication.")
                 : exitCode === 126 ? Translation.tr("Registration canceled.")
                 : Translation.tr("Could not register your face. Open the camera shutter, face the camera, and try again.");
         }
@@ -66,14 +95,18 @@ Dialog {
         border.width: 1
         border.color: Appearance.m3colors.m3outlineVariant
 
+        Flickable {
+            anchors.fill: parent
+            anchors.margins: 24
+            contentWidth: width
+            contentHeight: cardLayout.implicitHeight
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+            ScrollBar.vertical: ScrollBar {}
+
         ColumnLayout {
             id: cardLayout
-            anchors {
-                left: parent.left
-                right: parent.right
-                top: parent.top
-                margins: 24
-            }
+            width: parent.width
             spacing: 18
 
             RowLayout {
@@ -103,9 +136,77 @@ Dialog {
                     StyledText {
                         Layout.fillWidth: true
                         wrapMode: Text.Wrap
-                        text: Translation.tr("For unlocking after suspend")
+                        text: Translation.tr("For unlocking the screen and after suspend")
                         color: Appearance.m3colors.m3onSurfaceVariant
                         font.pixelSize: 13
+                    }
+                }
+            }
+
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 8
+                RowLayout {
+                    Layout.fillWidth: true
+                    StyledText {
+                        Layout.fillWidth: true
+                        text: Translation.tr("Registered faces (%1)").arg(root.registeredFaces.length)
+                        font.weight: Font.Medium
+                        color: Appearance.m3colors.m3onSurface
+                    }
+                    DialogButton {
+                        buttonText: Translation.tr("Refresh")
+                        enabled: !enrollment.running
+                        onClicked: modelFile.reload()
+                    }
+                }
+                StyledText {
+                    Layout.fillWidth: true
+                    visible: root.modelError.length > 0 || root.registeredFaces.length === 0
+                    text: root.modelError || Translation.tr("No faces registered yet.")
+                    wrapMode: Text.Wrap
+                    color: Appearance.m3colors.m3onSurfaceVariant
+                }
+                ScrollView {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: Math.min(faceRows.implicitHeight, 144)
+                    visible: root.registeredFaces.length > 0
+                    contentWidth: availableWidth
+                    clip: true
+                    ColumnLayout {
+                        id: faceRows
+                        width: parent.width
+                        spacing: 6
+                        Repeater {
+                            model: root.registeredFaces
+                            delegate: Rectangle {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                implicitHeight: faceInfo.implicitHeight + 20
+                                radius: 12
+                                color: Appearance.m3colors.m3surfaceContainerLow
+                                ColumnLayout {
+                                    id: faceInfo
+                                    anchors.fill: parent
+                                    anchors.margins: 10
+                                    spacing: 4
+                                    StyledText {
+                                        Layout.fillWidth: true
+                                        text: modelData.label
+                                        textFormat: Text.PlainText
+                                        elide: Text.ElideRight
+                                        color: Appearance.m3colors.m3onSurface
+                                    }
+                                    StyledText {
+                                        Layout.fillWidth: true
+                                        text: Translation.tr("ID %1 · Registered %2").arg(modelData.id)
+                                            .arg(Qt.formatDateTime(new Date(modelData.time * 1000), "yyyy/MM/dd HH:mm"))
+                                        font.pixelSize: 12
+                                        color: Appearance.m3colors.m3onSurfaceVariant
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -265,6 +366,7 @@ Dialog {
                     }
                 }
             }
+        }
         }
     }
 }

@@ -3,11 +3,13 @@ import Quickshell
 import Quickshell.Services.Pam
 
 // A separate PAM conversation keeps a failed camera attempt from consuming a
-// password attempt. Only the resume hook schedules authentication.
+// password attempt. Lock entry and the resume hook schedule authentication.
 Scope {
     id: root
 
     required property bool canAuthenticate
+    // A newly created lid monitor may still be fetching its initial state.
+    property bool readinessKnown: true
     readonly property bool active: facePam.active
     property bool requested: false
     property bool authenticating: false
@@ -15,7 +17,7 @@ Scope {
 
     function schedule() {
         stop();
-        if (!canAuthenticate) return;
+        if (readinessKnown && !canAuthenticate) return;
         requested = true;
         cameraReadyTimer.restart();
     }
@@ -38,7 +40,10 @@ Scope {
         // USB cameras can take a moment to become available after suspend.
         interval: 1500
         onTriggered: {
-            if (!root.requested || !root.canAuthenticate) return;
+            if (!root.requested || !root.readinessKnown || !root.canAuthenticate) {
+                root.stop();
+                return;
+            }
             root.authenticating = true;
             authTimeout.restart();
             if (!facePam.start()) root.stop();

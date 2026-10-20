@@ -48,6 +48,25 @@ TestCase {
         compare(accepted.count, 1);
         verify(!subject.requested);
     }
+    function test_initialLidQueryCanFinishBeforeCameraDelay() {
+        subject.readinessKnown = false;
+        subject.canAuthenticate = false;
+        subject.schedule();
+        wait(100);
+        subject.readinessKnown = true;
+        subject.canAuthenticate = true;
+        tryCompare(Harness, "starts", 1, 2200);
+        Harness.current.finish(PamResult.Success);
+        compare(accepted.count, 1);
+    }
+    function test_unknownLidNeverStartsCamera() {
+        subject.readinessKnown = false;
+        subject.canAuthenticate = false;
+        subject.schedule();
+        wait(1600);
+        compare(Harness.starts, 0);
+        verify(!subject.requested);
+    }
     function test_failedMatchAndMissingModule_data() {
         return [{tag: "mismatch", result: PamResult.Failed},
                 {tag: "missing-module", result: PamResult.Error}];

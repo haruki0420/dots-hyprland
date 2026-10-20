@@ -6,6 +6,7 @@ test_tmp=$(mktemp -d)
 trap 'rm -rf -- "$test_tmp"' EXIT
 cp -r "$test_dir/mocks" "$test_tmp/mocks"
 cp "$test_dir"/tst_*.qml "$test_tmp/"
+cp "$repo_dir/dots/.config/quickshell/ii/modules/settings/FaceModels.js" "$test_tmp/"
 # Exercise the production state machine with a fake PAM backend. Scope is a
 # nonvisual container; Item allows the tests to run without a Quickshell host.
 sed -e '/^import Quickshell$/d' \

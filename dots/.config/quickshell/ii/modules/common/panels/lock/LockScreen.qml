@@ -54,6 +54,7 @@ Scope {
                 if (GlobalStates.screenLocked) {
                     lockContext.reset();
                     lockContext.tryFingerUnlock();
+                    Qt.callLater(lockContext.tryFaceUnlock);
                 } else {
                     lockContext.stopFaceUnlock();
                 }
@@ -108,7 +109,7 @@ Scope {
     function resume() {
         lockContext.shouldReFocus();
         if (!Config.options.lock.useHyprlock && GlobalStates.screenLocked) {
-            lockContext.tryFaceUnlockOnResume();
+            lockContext.tryFaceUnlock();
         }
     }
 

@@ -189,7 +189,7 @@ ContentPage {
 
             ConfigSwitch {
                 buttonIcon: "face"
-                text: Translation.tr("Face unlock after suspend")
+                text: Translation.tr("Unlock with face authentication")
                 enabled: !Config.options.lock.useHyprlock
                 checked: Config.options.lock.security.faceUnlockOnResume
                 onCheckedChanged: {
@@ -202,7 +202,7 @@ ContentPage {
 
             RippleButtonWithIcon {
                 materialIcon: "face"
-                mainText: Translation.tr("Register your face")
+                mainText: Translation.tr("Manage registered faces")
                 onClicked: faceEnrollmentLoader.active = true
             }
 

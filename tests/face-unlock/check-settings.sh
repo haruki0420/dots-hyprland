@@ -28,7 +28,9 @@ cat >> "$check_file" <<'QML'
         onTriggered: {
             const ready = pageLoader.status === Loader.Ready
                 && pageLoader.item !== null && pageLoader.item.contentHeight > 100
-                && enrollmentCheck.status === Loader.Ready && enrollmentCheck.item !== null;
+                && enrollmentCheck.status === Loader.Ready && enrollmentCheck.item !== null
+                && (Quickshell.env("FACE_EXPECT_COUNT") === ""
+                    || enrollmentCheck.item.registeredFaces.length === Number(Quickshell.env("FACE_EXPECT_COUNT")));
             console.log(ready ? "SETTINGS_FACE_SMOKE_PASS" : "SETTINGS_FACE_SMOKE_FAIL",
                 pageLoader.status, enrollmentCheck.status);
             Qt.quit();
