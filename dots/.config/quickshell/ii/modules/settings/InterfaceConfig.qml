@@ -4,6 +4,7 @@ import QtQuick.Controls
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
+import qs.modules.settings as Settings
 
 ContentPage {
     id: root
@@ -12,7 +13,7 @@ ContentPage {
     Loader {
         id: faceEnrollmentLoader
         active: false
-        sourceComponent: FaceEnrollmentDialog {
+        sourceComponent: Settings.FaceEnrollmentDialog {
             parent: Overlay.overlay
             onClosed: faceEnrollmentLoader.active = false
             Component.onCompleted: open()
