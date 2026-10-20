@@ -8,6 +8,6 @@ QtObject {
     signal exited(int exitCode)
     Component.onCompleted: {
         if (command[1] === "monitor") Harness.monitor = this;
-        else Harness.query = this;
+        else if (command[0] === "gdbus") Harness.query = this;
     }
 }

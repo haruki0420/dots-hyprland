@@ -23,9 +23,17 @@ Scope {
     property var targetAction: LockContext.ActionEnum.Unlock
     property bool alsoInhibitIdle: false
     readonly property bool faceUnlockActive: faceUnlockLoader.item?.active ?? false
+    readonly property bool canRetryFaceUnlock: faceUnlockLoader.item?.retryAvailable ?? false
 
     function tryFaceUnlock() {
         faceUnlockLoader.item?.schedule();
+    }
+
+    function retryFaceUnlock() {
+        if (!canRetryFaceUnlock) return;
+        // An explicit retry switches back from password entry to the camera.
+        root.clearText();
+        root.tryFaceUnlock();
     }
 
     function stopFaceUnlock() {
@@ -38,6 +46,9 @@ Scope {
         sourceComponent: FaceUnlock {
             LidState { id: lidState }
             readinessKnown: lidState.known
+            readonly property bool retryAvailable: lidState.known && !lidState.closed
+                && GlobalStates.screenLocked && root.targetAction === LockContext.ActionEnum.Unlock
+                && !root.unlockInProgress && !requested && !active
             canAuthenticate: lidState.known && !lidState.closed && GlobalStates.screenLocked
                 && root.targetAction === LockContext.ActionEnum.Unlock
                 && root.currentText.length === 0 && !root.unlockInProgress

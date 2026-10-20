@@ -19,5 +19,13 @@ sed -e '/^import Quickshell$/d' \
     -e 's/^Scope {/Item {/' \
     "$repo_dir/dots/.config/quickshell/ii/modules/common/panels/lock/LidState.qml" \
     > "$test_tmp/LidState.qml"
+sed -e '/^import qs$/d' \
+    -e '/^import qs.modules.common$/d' \
+    -e '/^import Quickshell$/d' \
+    -e '/^import Quickshell.Io$/d' \
+    -e 's/^import Quickshell.Services.Pam$/import "mocks"/' \
+    -e 's/^Scope {/Item {/' \
+    "$repo_dir/dots/.config/quickshell/ii/modules/common/panels/lock/LockContext.qml" \
+    > "$test_tmp/LockContext.qml"
 QT_QPA_PLATFORM=offscreen QT_QUICK_BACKEND=software \
     "${QMLTESTRUNNER:-/usr/lib/qt6/bin/qmltestrunner}" -input "$test_tmp" "$@"

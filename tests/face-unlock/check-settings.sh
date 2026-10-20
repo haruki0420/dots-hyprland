@@ -9,6 +9,7 @@ check_file=$(mktemp "$qml_root/face-settings-smoke-XXXXXX.qml")
 check_log=$(mktemp)
 trap 'rm -f -- "$check_file" "$check_log"' EXIT
 sed -e 's/property int currentPage: 0/property int currentPage: 4/' \
+    -e '/^import qs.modules.common$/a import qs.modules.common.panels.lock' \
     -e '0,/visible: true/s//visible: false/' \
     -e 's/source = root.pages\[0\].component/source = root.pages[root.currentPage].component/' \
     -e '$d' "$qml_root/settings.qml" > "$check_file"
@@ -18,19 +19,40 @@ cat >> "$check_file" <<'QML'
         active: Config.ready
         source: "modules/settings/FaceEnrollmentDialog.qml"
         onLoaded: {
+            if (Quickshell.env("FACE_TEST_LANGUAGE"))
+                Translation.languageCode = Quickshell.env("FACE_TEST_LANGUAGE");
             item.parent = Overlay.overlay;
             item.open();
         }
+    }
+    LockContext { id: faceContext }
+    Loader {
+        id: retryCheck
+        sourceComponent: FaceRetryButton { context: faceContext }
     }
     Timer {
         running: true
         interval: 2500
         onTriggered: {
-            const ready = pageLoader.status === Loader.Ready
+            let ready = pageLoader.status === Loader.Ready
                 && pageLoader.item !== null && pageLoader.item.contentHeight > 100
                 && enrollmentCheck.status === Loader.Ready && enrollmentCheck.item !== null
-                && (Quickshell.env("FACE_EXPECT_COUNT") === ""
-                    || enrollmentCheck.item.registeredFaces.length === Number(Quickshell.env("FACE_EXPECT_COUNT")));
+                && (!Quickshell.env("FACE_EXPECT_COUNT")
+                    || enrollmentCheck.item.registeredFaces.length === Number(Quickshell.env("FACE_EXPECT_COUNT")))
+                && retryCheck.status === Loader.Ready && retryCheck.item !== null
+                && !faceContext.canRetryFaceUnlock;
+            if (ready && Quickshell.env("FACE_EXPECT_NAME"))
+                ready = enrollmentCheck.item.suggestedName === Quickshell.env("FACE_EXPECT_NAME");
+            if (ready && Quickshell.env("FACE_CHECK_DELETE") === "1") {
+                const dialog = enrollmentCheck.item;
+                ready = dialog.helperReady && dialog.registeredFaces.length > 0;
+                if (ready) {
+                    const face = dialog.registeredFaces[0];
+                    dialog.requestDeletion(face.id, face.label);
+                    ready = dialog.pendingDeleteId === face.id && !dialog.canRegister && !dialog.busy;
+                    dialog.pendingDeleteId = -1; // Cancel; never invoke pkexec or delete a real model.
+                }
+            }
             console.log(ready ? "SETTINGS_FACE_SMOKE_PASS" : "SETTINGS_FACE_SMOKE_FAIL",
                 pageLoader.status, enrollmentCheck.status);
             Qt.quit();

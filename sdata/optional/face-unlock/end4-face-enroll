@@ -1,22 +1,60 @@
 #!/bin/bash
 # Install a root-owned COPY to /usr/local/libexec/end4-face-enroll.
-# The GUI stays unprivileged; pkexec authenticates this one enrollment operation.
+# The GUI stays unprivileged; pkexec authenticates add/remove operations.
 set -euo pipefail
 export PATH=/usr/bin:/bin
 umask 077
 
+if [[ $# -eq 1 && $1 == --version ]]; then
+    printf '%s\n' 'end4-face-models 2'
+    exit 0
+fi
 if [[ $EUID -ne 0 || ! ${PKEXEC_UID:-} =~ ^[0-9]+$ || ${PKEXEC_UID:-0} -eq 0 ]]; then
     printf '%s\n' 'Run this helper through pkexec from your desktop account.' >&2
     exit 1
 fi
-if [[ $# -ne 1 || -z $1 || ${#1} -gt 24 ]]; then
+action=add
+if [[ $# -eq 2 && ( $1 == add || $1 == remove ) ]]; then
+    action=$1
+    shift
+elif [[ $# -ne 1 ]]; then
+    printf '%s\n' 'Use add NAME or remove ID.' >&2
+    exit 1
+fi
+if [[ $action == add && ( -z $1 || ${#1} -gt 24 ) ]]; then
     printf '%s\n' 'Provide a face name of 1–24 characters.' >&2
+    exit 1
+fi
+if [[ $action == remove && ! $1 =~ ^(0|[1-9][0-9]{0,9})$ ]]; then
+    printf '%s\n' 'Provide a numeric face ID.' >&2
     exit 1
 fi
 enroll_user=$(/usr/bin/getent passwd "$PKEXEC_UID" | /usr/bin/cut -d: -f1)
 if [[ ! $enroll_user =~ ^[a-zA-Z0-9_.-]+$ ]]; then
     printf '%s\n' 'Could not identify the desktop account.' >&2
     exit 1
+fi
+
+models=/etc/howdy/models
+model="$models/$enroll_user.dat"
+if [[ -L $models || -L $model ]]; then
+    printf '%s\n' 'Refusing a symlink in the face model path.' >&2
+    exit 1
+fi
+restrict_model() {
+    # Removing the last model deletes the file. Do not recreate it.
+    if [[ ! -f $model ]]; then return 0; fi
+    /usr/bin/chmod o-rwx "$models"
+    /usr/bin/chmod 600 "$model"
+    /usr/bin/setfacl -m "u:$enroll_user:--x" "$models"
+    /usr/bin/setfacl -m "u:$enroll_user:r--" "$model"
+}
+if [[ $action == remove ]]; then
+    # Deleting a model never needs to open the lid or camera.
+    /usr/bin/timeout --kill-after=3s 10s /usr/bin/howdy -U "$enroll_user" -y remove -- "$1"
+    restrict_model
+    printf '%s\n' 'Face deleted successfully.'
+    exit 0
 fi
 
 lid_open() {
@@ -29,12 +67,6 @@ if ! lid_open; then
     exit 1
 fi
 
-models=/etc/howdy/models
-model="$models/$enroll_user.dat"
-if [[ -L $models || -L $model ]]; then
-    printf '%s\n' 'Refusing a symlink in the face model path.' >&2
-    exit 1
-fi
 child=''
 watcher=''
 cleanup() {
@@ -69,8 +101,5 @@ if [[ $status -ne 0 ]]; then exit "$status"; fi
 
 # The root-owned model remains unwritable by the desktop user. Existing ACLs
 # for other enrolled accounts are preserved on the parent directory.
-/usr/bin/chmod o-rwx "$models"
-/usr/bin/chmod 600 "$model"
-/usr/bin/setfacl -m "u:$enroll_user:--x" "$models"
-/usr/bin/setfacl -m "u:$enroll_user:r--" "$model"
+restrict_model
 printf '%s\n' 'Face registered successfully.'

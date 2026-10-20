@@ -31,12 +31,13 @@ lock screen, not Hyprlock, the login greeter, `sudo`, or disk encryption.
    ```
 
    This Arch-layout helper uses `/usr/bin/howdy` and `/etc/howdy/models`.
-   It accepts only a label, gets the account from `PKEXEC_UID`, and grants only
+   It accepts `add NAME` or `remove ID`, gets the account from `PKEXEC_UID`, and grants only
    that user read access to the root-owned model. **Manage registered faces** in the
    settings opens an unprivileged dialog with names, registration dates and IDs.
    Only metadata is displayed, and opening or refreshing the list needs no
    administrator authentication; administrator authentication applies
-   only to the enrollment operation. UPower, `gdbus`, `pkexec`, and `setfacl`
+   only to enrollment or deletion. Reinstall the helper when upgrading;
+   `end4-face-enroll --version` must report `end4-face-models 2`. UPower, `gdbus`, `pkexec`, and `setfacl`
    must be installed. Neither the desktop shell nor the settings GUI runs as root.
 5. Enable **Unlock with face authentication** in Settings → Interface → Lock screen →
    Security, or set `lock.security.faceUnlockOnResume` to `true` in
@@ -62,6 +63,15 @@ fails closed if the lid state is unknown or UPower disconnects. Enrollment is
 also blocked or stopped while the lid is closed. Missing hardware, an unavailable PAM service, a timeout, or
 a failed match leaves password unlock available. A ten-second watchdog stops
 an unresponsive PAM conversation; there is no automatic retry loop.
+On the ii lock screen, **Retry face authentication** starts another attempt
+whenever you are ready. It clears any partial password, is disabled during an
+existing attempt, and respects lid, power-action and password-authentication guards.
+
+The registration name defaults to **Face authentication 1** (Japanese: **顔認証1**),
+then uses the first available number across English and Japanese labels. You
+can edit the proposed name. Each saved face has a **Delete** action with a
+confirmation; deleting the last face disables face matches until re-enrollment.
+Deleting a model does not open the camera and also works with the lid closed.
 
 Face authentication cannot supply the password needed to unlock an encrypted
 keyring. A keyring already unlocked before suspend remains usable; otherwise
@@ -78,6 +88,9 @@ camera or lock the desktop. Also test on the target machine:
 `tests/face-unlock/check-settings.sh` additionally checks the actual settings
 entrypoint's dynamic page and enrollment-dialog loading in a hidden native
 window. It requires a running Wayland session and does not enroll or authenticate.
+Use `FACE_TEST_LANGUAGE=en_US` or `ja_JP` to check either language.
+`python3 tests/face-unlock/check-helper.py` exercises add/remove using temporary
+models and fake OS commands, without administrator access or real biometric data.
 
 - Suspend while locked, resume, and verify that an enrolled face unlocks.
 - Cover the camera and verify that password unlock still works.

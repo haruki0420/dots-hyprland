@@ -2,10 +2,12 @@ import QtQml
 
 QtObject {
     property string config: ""
+    property string configDirectory: ""
     property bool active: false
     property bool responseRequired: false
     signal pamMessage()
     signal completed(int result)
+    function respond(text) {}
 
     function start() {
         Harness.current = this;

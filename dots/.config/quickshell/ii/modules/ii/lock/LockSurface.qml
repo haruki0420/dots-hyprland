@@ -111,6 +111,13 @@ MouseArea {
         scale: root.toolbarScale
         opacity: root.toolbarOpacity
 
+        Loader {
+            Layout.fillHeight: true
+            active: Config.options.lock.security.faceUnlockOnResume
+            visible: active && root.context.targetAction === LockContext.ActionEnum.Unlock
+            sourceComponent: FaceRetryButton { context: root.context }
+        }
+
         // Fingerprint
         Loader {
             Layout.leftMargin: 10

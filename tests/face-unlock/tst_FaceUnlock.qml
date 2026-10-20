@@ -48,6 +48,17 @@ TestCase {
         compare(accepted.count, 1);
         verify(!subject.requested);
     }
+    function test_explicitRetryAfterFailure() {
+        startAttempt();
+        Harness.current.finish(PamResult.Failed);
+        compare(accepted.count, 0);
+        wait(1600);
+        compare(Harness.starts, 1);
+        subject.schedule(); // only an explicit request starts another attempt
+        tryCompare(Harness, "starts", 2, 2200);
+        Harness.current.finish(PamResult.Success);
+        compare(accepted.count, 1);
+    }
     function test_initialLidQueryCanFinishBeforeCameraDelay() {
         subject.readinessKnown = false;
         subject.canAuthenticate = false;

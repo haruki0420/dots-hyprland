@@ -460,5 +460,15 @@
   "ID %1 · Registered %2": "ID %1 ・登録日時 %2",
   "Unlock with face authentication": "顔認証でロックを解除",
   "Manage registered faces": "登録済みの顔・新規登録",
-  "Face registered. You can now enable face authentication.": "顔を登録しました。顔認証でのロック解除を有効にできます。"
+  "Face registered. You can now enable face authentication.": "顔を登録しました。顔認証でのロック解除を有効にできます。",
+  "Face authentication %1": "顔認証%1",
+  "Delete “%1”?": "「%1」を削除しますか？",
+  "This is your last registered face. Face unlock will be unavailable until you register again.": "最後の登録です。削除すると、再登録するまで顔認証を利用できなくなります。",
+  "This face will no longer unlock your screen. Administrator authentication is required to delete it.": "この顔ではロックを解除できなくなります。削除には管理者認証が必要です。",
+  "Deleting…": "削除しています…",
+  "Face deleted.": "顔の登録を削除しました。",
+  "Deletion canceled.": "削除をキャンセルしました。",
+  "Could not delete the face. Refresh the list and try again.": "削除できませんでした。一覧を更新して再度お試しください。",
+  "Saving and deleting require administrator authentication. Move your head slightly if the IR light goes dark.": "登録・削除には管理者認証が必要です。赤外線ライトが消える場合は、頭を少し動かしてください。",
+  "Retry face authentication": "顔認証を再試行"
 }

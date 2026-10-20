@@ -1,4 +1,6 @@
 singleton Harness 1.0 Harness.qml
+singleton Config 1.0 Config.qml
+singleton GlobalStates 1.0 GlobalStates.qml
 PamContext 1.0 PamContext.qml
 PamResult 1.0 PamResult.qml
 Process 1.0 Process.qml
