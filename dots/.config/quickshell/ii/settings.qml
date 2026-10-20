@@ -15,6 +15,8 @@ import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions as CF
+// Register the pages (and optional dialogs) used by the URL-based page loader.
+import qs.modules.settings as Settings
 
 ApplicationWindow {
     id: root

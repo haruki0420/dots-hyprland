@@ -625,5 +625,6 @@
   "My face": "My face",
   "Look at the camera. Waiting for registration…": "Look at the camera. Waiting for registration…",
   "Register": "Register",
-  "Face registration setup is not complete yet. Finish the system setup before registering.": "Face registration setup is not complete yet. Finish the system setup before registering."
+  "Face registration setup is not complete yet. Finish the system setup before registering.": "Face registration setup is not complete yet. Finish the system setup before registering.",
+  "Could not open face registration. Other settings remain available.": "Could not open face registration. Other settings remain available."
 }

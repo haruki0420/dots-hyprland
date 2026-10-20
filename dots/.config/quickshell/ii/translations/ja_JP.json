@@ -442,5 +442,6 @@
   "My face": "自分の顔",
   "Look at the camera. Waiting for registration…": "カメラを見てください。顔を登録しています…",
   "Register": "登録する",
-  "Face registration setup is not complete yet. Finish the system setup before registering.": "顔登録の準備がまだ完了していません。システムのセットアップ後に登録してください。"
+  "Face registration setup is not complete yet. Finish the system setup before registering.": "顔登録の準備がまだ完了していません。システムのセットアップ後に登録してください。",
+  "Could not open face registration. Other settings remain available.": "顔登録を開けませんでした。他の設定はそのまま利用できます。"
 }

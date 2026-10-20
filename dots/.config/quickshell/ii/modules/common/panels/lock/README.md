@@ -72,6 +72,10 @@ Run `tests/face-unlock/run.sh` from the repository. The Qt tests exercise the
 production component with a simulated PAM conversation; they do not open the
 camera or lock the desktop. Also test on the target machine:
 
+`tests/face-unlock/check-settings.sh` additionally checks the actual settings
+entrypoint's dynamic page and enrollment-dialog loading in a hidden native
+window. It requires a running Wayland session and does not enroll or authenticate.
+
 - Suspend while locked, resume, and verify that an enrolled face unlocks.
 - Cover the camera and verify that password unlock still works.
 - Type immediately after resume and verify that face authentication stops.

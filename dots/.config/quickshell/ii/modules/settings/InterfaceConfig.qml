@@ -4,7 +4,6 @@ import QtQuick.Controls
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
-import qs.modules.settings as Settings
 
 ContentPage {
     id: root
@@ -13,10 +12,16 @@ ContentPage {
     Loader {
         id: faceEnrollmentLoader
         active: false
-        sourceComponent: Settings.FaceEnrollmentDialog {
-            parent: Overlay.overlay
-            onClosed: faceEnrollmentLoader.active = false
-            Component.onCompleted: open()
+        source: "FaceEnrollmentDialog.qml"
+        onLoaded: {
+            item.parent = Overlay.overlay;
+            item.open();
+        }
+        Connections {
+            target: faceEnrollmentLoader.item
+            function onClosed() {
+                faceEnrollmentLoader.active = false;
+            }
         }
     }
 
@@ -199,6 +204,13 @@ ContentPage {
                 materialIcon: "face"
                 mainText: Translation.tr("Register your face")
                 onClicked: faceEnrollmentLoader.active = true
+            }
+
+            StyledText {
+                Layout.fillWidth: true
+                visible: faceEnrollmentLoader.status === Loader.Error
+                wrapMode: Text.Wrap
+                text: Translation.tr("Could not open face registration. Other settings remain available.")
             }
 
             ConfigSwitch {
