@@ -23,10 +23,23 @@ lock screen, not Hyprlock, the login greeter, `sudo`, or disk encryption.
    model. Keep the model and PAM service owned by root and not user-writable.
    If needed, grant that user read access to their model using an ACL rather
    than making all enrolled models world-readable.
-4. Enable **Face unlock after suspend** in Settings → Interface → Lock screen →
+4. To register faces from the settings GUI, install the optional helper as a
+   root-owned copy from the repository (do not symlink it into your checkout):
+
+   ```sh
+   sudo install -Dm755 sdata/optional/face-unlock/end4-face-enroll /usr/local/libexec/end4-face-enroll
+   ```
+
+   This Arch-layout helper uses `/usr/bin/howdy` and `/etc/howdy/models`.
+   It accepts only a label, gets the account from `PKEXEC_UID`, and grants only
+   that user read access to the root-owned model. **Register your face** in the
+   settings opens an unprivileged dialog; administrator authentication applies
+   only to the enrollment operation. UPower, `gdbus`, `pkexec`, and `setfacl`
+   must be installed. Neither the desktop shell nor the settings GUI runs as root.
+5. Enable **Face unlock after suspend** in Settings → Interface → Lock screen →
    Security, or set `lock.security.faceUnlockOnResume` to `true` in
    `~/.config/illogical-impulse/config.json`. Leave `lock.useHyprlock` disabled.
-5. The supplied `hypridle.conf` dispatches `quickshell:lockResume` after suspend.
+6. The supplied `hypridle.conf` dispatches `quickshell:lockResume` after suspend.
    If you maintain a custom `after_sleep_cmd`, preserve its existing commands
    and add:
 
@@ -40,7 +53,10 @@ lock screen, not Hyprlock, the login greeter, `sudo`, or disk encryption.
 
 After resume, the shell waits 1.5 seconds for the camera and makes one attempt.
 Typing, submitting a password, selecting a power action, or leaving the lock
-screen cancels it. Missing hardware, an unavailable PAM service, a timeout, or
+screen cancels it. A closed lid (including clamshell mode) prevents camera
+authentication, and closing the lid during an attempt cancels it. The shell
+fails closed if the lid state is unknown or UPower disconnects. Enrollment is
+also blocked or stopped while the lid is closed. Missing hardware, an unavailable PAM service, a timeout, or
 a failed match leaves password unlock available. A ten-second watchdog stops
 an unresponsive PAM conversation; there is no automatic retry loop.
 

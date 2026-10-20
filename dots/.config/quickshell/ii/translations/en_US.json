@@ -614,5 +614,16 @@
   "Unpin": "Unpin",
   "Looking for your face…": "Looking for your face…",
   "Face unlock after suspend": "Face unlock after suspend",
-  "Requires Howdy and the quickshell-face PAM service. Password unlock remains available.": "Requires Howdy and the quickshell-face PAM service. Password unlock remains available."
+  "Requires Howdy and the quickshell-face PAM service. Password unlock remains available.": "Requires Howdy and the quickshell-face PAM service. Password unlock remains available.",
+  "Register your face": "Register your face",
+  "Face registered. You can now enable face unlock after suspend.": "Face registered. You can now enable face unlock after suspend.",
+  "Registration canceled.": "Registration canceled.",
+  "Could not register your face. Open the camera shutter, face the camera, and try again.": "Could not register your face. Open the camera shutter, face the camera, and try again.",
+  "Open the laptop lid and camera shutter, then look at the camera. Move your head slightly if the IR light goes dark. Administrator authentication is required to save your face securely.": "Open the laptop lid and camera shutter, then look at the camera. Move your head slightly if the IR light goes dark. Administrator authentication is required to save your face securely.",
+  "Open the laptop lid to register your face.": "Open the laptop lid to register your face.",
+  "Face name": "Face name",
+  "My face": "My face",
+  "Look at the camera. Waiting for registration…": "Look at the camera. Waiting for registration…",
+  "Register": "Register",
+  "Face registration setup is not complete yet. Finish the system setup before registering.": "Face registration setup is not complete yet. Finish the system setup before registering."
 }

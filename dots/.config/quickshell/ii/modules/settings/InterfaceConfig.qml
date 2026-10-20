@@ -1,11 +1,23 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 
 ContentPage {
+    id: root
     forceWidth: true
+
+    Loader {
+        id: faceEnrollmentLoader
+        active: false
+        sourceComponent: FaceEnrollmentDialog {
+            parent: Overlay.overlay
+            onClosed: faceEnrollmentLoader.active = false
+            Component.onCompleted: open()
+        }
+    }
 
     ContentSection {
         icon: "keyboard"
@@ -180,6 +192,12 @@ ContentPage {
                 StyledToolTip {
                     text: Translation.tr("Requires Howdy and the quickshell-face PAM service. Password unlock remains available.")
                 }
+            }
+
+            RippleButtonWithIcon {
+                materialIcon: "face"
+                mainText: Translation.tr("Register your face")
+                onClicked: faceEnrollmentLoader.active = true
             }
 
             ConfigSwitch {

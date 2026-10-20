@@ -431,5 +431,16 @@
   "Vertical": "垂直",
   "Looking for your face…": "顔を確認しています…",
   "Face unlock after suspend": "スリープ復帰時に顔認証で解除",
-  "Requires Howdy and the quickshell-face PAM service. Password unlock remains available.": "Howdyとquickshell-faceのPAM設定が必要です。パスワードでの解除も利用できます。"
+  "Requires Howdy and the quickshell-face PAM service. Password unlock remains available.": "Howdyとquickshell-faceのPAM設定が必要です。パスワードでの解除も利用できます。",
+  "Register your face": "顔を登録",
+  "Face registered. You can now enable face unlock after suspend.": "顔を登録しました。スリープ復帰時の顔認証を有効にできます。",
+  "Registration canceled.": "顔登録をキャンセルしました。",
+  "Could not register your face. Open the camera shutter, face the camera, and try again.": "顔を登録できませんでした。カメラのシャッターを開き、正面を向いて再度お試しください。",
+  "Open the laptop lid and camera shutter, then look at the camera. Move your head slightly if the IR light goes dark. Administrator authentication is required to save your face securely.": "PCの蓋とカメラのシャッターを開き、カメラを見てください。赤外線ライトが消える場合は、頭を少し動かしてください。顔データの保存時に管理者認証が必要です。",
+  "Open the laptop lid to register your face.": "顔を登録するにはPCの蓋を開いてください。",
+  "Face name": "登録名",
+  "My face": "自分の顔",
+  "Look at the camera. Waiting for registration…": "カメラを見てください。顔を登録しています…",
+  "Register": "登録する",
+  "Face registration setup is not complete yet. Finish the system setup before registering.": "顔登録の準備がまだ完了していません。システムのセットアップ後に登録してください。"
 }

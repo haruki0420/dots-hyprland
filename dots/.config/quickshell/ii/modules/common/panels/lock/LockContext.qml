@@ -36,7 +36,8 @@ Scope {
         id: faceUnlockLoader
         active: Config.options.lock.security.faceUnlockOnResume
         sourceComponent: FaceUnlock {
-            canAuthenticate: GlobalStates.screenLocked
+            LidState { id: lidState }
+            canAuthenticate: lidState.known && !lidState.closed && GlobalStates.screenLocked
                 && root.targetAction === LockContext.ActionEnum.Unlock
                 && root.currentText.length === 0 && !root.unlockInProgress
             onAuthenticated: {

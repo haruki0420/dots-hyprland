@@ -1,0 +1,76 @@
+#!/bin/bash
+# Install a root-owned COPY to /usr/local/libexec/end4-face-enroll.
+# The GUI stays unprivileged; pkexec authenticates this one enrollment operation.
+set -euo pipefail
+export PATH=/usr/bin:/bin
+umask 077
+
+if [[ $EUID -ne 0 || ! ${PKEXEC_UID:-} =~ ^[0-9]+$ || ${PKEXEC_UID:-0} -eq 0 ]]; then
+    printf '%s\n' 'Run this helper through pkexec from your desktop account.' >&2
+    exit 1
+fi
+if [[ $# -ne 1 || -z $1 || ${#1} -gt 24 ]]; then
+    printf '%s\n' 'Provide a face name of 1–24 characters.' >&2
+    exit 1
+fi
+enroll_user=$(/usr/bin/getent passwd "$PKEXEC_UID" | /usr/bin/cut -d: -f1)
+if [[ ! $enroll_user =~ ^[a-zA-Z0-9_.-]+$ ]]; then
+    printf '%s\n' 'Could not identify the desktop account.' >&2
+    exit 1
+fi
+
+lid_open() {
+    [[ $(/usr/bin/gdbus call --system --dest org.freedesktop.UPower \
+        --object-path /org/freedesktop/UPower --method org.freedesktop.DBus.Properties.Get \
+        org.freedesktop.UPower LidIsClosed 2>/dev/null) == '(<false>,)' ]]
+}
+if ! lid_open; then
+    printf '%s\n' 'Open the laptop lid before registering your face.' >&2
+    exit 1
+fi
+
+models=/etc/howdy/models
+model="$models/$enroll_user.dat"
+if [[ -L $models || -L $model ]]; then
+    printf '%s\n' 'Refusing a symlink in the face model path.' >&2
+    exit 1
+fi
+child=''
+watcher=''
+cleanup() {
+    if [[ -n $watcher ]]; then kill "$watcher" 2>/dev/null || true; fi
+    if [[ -n $child ]]; then kill "$child" 2>/dev/null || true; fi
+    return 0
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+/usr/bin/timeout --kill-after=3s 30s /usr/bin/howdy -U "$enroll_user" -y add -- "$1" &
+child=$!
+(
+    while kill -0 "$child" 2>/dev/null; do
+        if ! lid_open; then
+            printf '%s\n' 'Registration stopped because the lid is closed or unavailable.' >&2
+            kill "$child" 2>/dev/null || true
+            break
+        fi
+        /usr/bin/sleep 0.5
+    done
+) &
+watcher=$!
+status=0
+wait "$child" || status=$?
+child=''
+kill "$watcher" 2>/dev/null || true
+wait "$watcher" 2>/dev/null || true
+watcher=''
+if [[ $status -ne 0 ]]; then exit "$status"; fi
+
+# The root-owned model remains unwritable by the desktop user. Existing ACLs
+# for other enrolled accounts are preserved on the parent directory.
+/usr/bin/chmod o-rwx "$models"
+/usr/bin/chmod 600 "$model"
+/usr/bin/setfacl -m "u:$enroll_user:--x" "$models"
+/usr/bin/setfacl -m "u:$enroll_user:r--" "$model"
+printf '%s\n' 'Face registered successfully.'
