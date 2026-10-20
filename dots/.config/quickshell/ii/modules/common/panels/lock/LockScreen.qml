@@ -125,6 +125,9 @@ Scope {
         function resume(): void {
             root.resume();
         }
+        function status(): string {
+            return GlobalStates.screenLocked ? "locked" : "unlocked";
+        }
     }
 
     GlobalShortcut {
