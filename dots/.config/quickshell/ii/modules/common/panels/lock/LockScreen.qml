@@ -54,6 +54,8 @@ Scope {
                 if (GlobalStates.screenLocked) {
                     lockContext.reset();
                     lockContext.tryFingerUnlock();
+                } else {
+                    lockContext.stopFaceUnlock();
                 }
             }
         }
@@ -69,7 +71,7 @@ Scope {
             }
 
             // Unlock the keyring if configured to do so
-            if (Config.options.lock.security.unlockKeyring) root.unlockKeyring(); // Async
+            if (Config.options.lock.security.unlockKeyring && lockContext.currentText.length > 0) root.unlockKeyring(); // Async
 
             // Unlock the screen before exiting, or the compositor will display a
             // fallback lock you can't interact with.
@@ -93,11 +95,21 @@ Scope {
     }
 
     function lock() {
+        // Re-locking an already locked session before suspend must cancel any
+        // camera attempt left over from the previous resume.
+        lockContext.stopFaceUnlock();
         if (Config.options.lock.useHyprlock) {
             Quickshell.execDetached(["bash", "-c", "pidof hyprlock || hyprlock"]);
             return;
         }
         GlobalStates.screenLocked = true;
+    }
+
+    function resume() {
+        lockContext.shouldReFocus();
+        if (!Config.options.lock.useHyprlock && GlobalStates.screenLocked) {
+            lockContext.tryFaceUnlockOnResume();
+        }
     }
 
     IpcHandler {
@@ -109,6 +121,9 @@ Scope {
         function focus(): void {
             lockContext.shouldReFocus();
         }
+        function resume(): void {
+            root.resume();
+        }
     }
 
     GlobalShortcut {
@@ -118,6 +133,12 @@ Scope {
         onPressed: {
             root.lock()
         }
+    }
+
+    GlobalShortcut {
+        name: "lockResume"
+        description: "Re-focuses the lock screen and attempts enabled face authentication after suspend"
+        onPressed: root.resume()
     }
 
     GlobalShortcut {

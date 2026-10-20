@@ -170,6 +170,19 @@ ContentPage {
             title: Translation.tr("Security")
 
             ConfigSwitch {
+                buttonIcon: "face"
+                text: Translation.tr("Face unlock after suspend")
+                enabled: !Config.options.lock.useHyprlock
+                checked: Config.options.lock.security.faceUnlockOnResume
+                onCheckedChanged: {
+                    Config.options.lock.security.faceUnlockOnResume = checked;
+                }
+                StyledToolTip {
+                    text: Translation.tr("Requires Howdy and the quickshell-face PAM service. Password unlock remains available.")
+                }
+            }
+
+            ConfigSwitch {
                 buttonIcon: "settings_power"
                 text: Translation.tr('Require password to power off/restart')
                 checked: Config.options.lock.security.requirePasswordToPower

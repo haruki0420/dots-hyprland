@@ -22,6 +22,29 @@ Scope {
     property bool fingerprintsConfigured: false
     property var targetAction: LockContext.ActionEnum.Unlock
     property bool alsoInhibitIdle: false
+    readonly property bool faceUnlockActive: faceUnlockLoader.item?.active ?? false
+
+    function tryFaceUnlockOnResume() {
+        faceUnlockLoader.item?.schedule();
+    }
+
+    function stopFaceUnlock() {
+        faceUnlockLoader.item?.stop();
+    }
+
+    Loader {
+        id: faceUnlockLoader
+        active: Config.options.lock.security.faceUnlockOnResume
+        sourceComponent: FaceUnlock {
+            canAuthenticate: GlobalStates.screenLocked
+                && root.targetAction === LockContext.ActionEnum.Unlock
+                && root.currentText.length === 0 && !root.unlockInProgress
+            onAuthenticated: {
+                root.stopFingerPam();
+                root.unlocked(LockContext.ActionEnum.Unlock);
+            }
+        }
+    }
 
     function resetTargetAction() {
         root.targetAction = LockContext.ActionEnum.Unlock;
@@ -36,6 +59,7 @@ Scope {
     }
 
     function reset() {
+        stopFaceUnlock();
         root.resetTargetAction();
         root.clearText();
         root.unlockInProgress = false;
@@ -60,6 +84,7 @@ Scope {
     }
 
     function tryUnlock(alsoInhibitIdle = false) {
+        stopFaceUnlock();
         root.alsoInhibitIdle = alsoInhibitIdle;
         root.unlockInProgress = true;
         pam.start();

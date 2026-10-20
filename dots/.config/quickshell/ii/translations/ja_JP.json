@@ -428,5 +428,8 @@
   "Lap": "ラップ",
   "Horizontal": "水平",
   "Region width": "領域の幅",
-  "Vertical": "垂直"
+  "Vertical": "垂直",
+  "Looking for your face…": "顔を確認しています…",
+  "Face unlock after suspend": "スリープ復帰時に顔認証で解除",
+  "Requires Howdy and the quickshell-face PAM service. Password unlock remains available.": "Howdyとquickshell-faceのPAM設定が必要です。パスワードでの解除も利用できます。"
 }
